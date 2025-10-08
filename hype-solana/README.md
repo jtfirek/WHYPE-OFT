@@ -2,7 +2,13 @@
 
 Run `pnpm install` to get dependencies.
 
-To wire Solana -> evm chains, set up the desired configurations within `consts/wire.ts` and `layerzero.config.ts`. See existing chains for reference. Then  run:
+To wire Solana -> evm chains, set up the desired configurations within `consts/wire.ts` and `layerzero.config.ts`. See existing chains for reference.
+
+Then run the following 2 commands to ensure accounts are initialized and the contracts are wired:
+
+```
+npx hardhat lz:oft:solana:init-config --oapp-config layerzero.config.ts --ci
+```
 
 ```
 npx hardhat lz:oapp:wire --oapp-config layerzero.config.ts --ci --skip-connections-from-eids < evm eids >
