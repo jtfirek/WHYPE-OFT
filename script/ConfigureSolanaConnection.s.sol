@@ -22,7 +22,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
     //////////////////////////////////////////////////////////////*/
     
     // Solana EID and Peer Address
-    uint32 constant SOLANA_EID = 40168;
+    uint32 constant SOLANA_EID = 30168;
     bytes32 constant SOLANA_PEER = 0x8d6b09beda705dba0621aa53db6f864d4fc60f40deefb7f41faa83c14663c6c9;
     
     // Ethereum LayerZero Addresses
