@@ -1,66 +1,25 @@
-## Foundry
+# WHYPE OFT Cross-Chain
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Omnichain Fungible Token (OFT) implementation enabling WHYPE to bridge between Ethereum and HyperEVM.
 
-Foundry consists of:
+## About
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+**Decentralized control managed by:**  
+hyperbeat x flow desk x ether.fi x wintermute x luganodes
 
-## Documentation
+## Deployed Contracts
 
-https://book.getfoundry.sh/
+| Chain | Address |
+|-------|---------|
+| **OFT** (Ethereum) | `0xd83e3d560ba6f05094d9d8b3eb8aaea571d1864e` |
+| **OFT Adapter** (HyperEVM) | `0x2B7E48511ea616101834f09945c11F7d78D9136d` |
 
-## Usage
+## Build & Test
 
-### Build
+```bash
+# Build contracts
+yarn build
 
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+# Run tests
+yarn test
 ```
