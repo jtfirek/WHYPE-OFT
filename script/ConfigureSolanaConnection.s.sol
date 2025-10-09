@@ -75,7 +75,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
         enforcedOptions[0] = EnforcedOptionParam({
             eid: SOLANA_EID,
             msgType: 1,
-            options: OptionsBuilder.newOptions().addExecutorLzReceiveOption(SOLANA_GAS, 0)
+            options: OptionsBuilder.newOptions().addExecutorLzReceiveOption(SOLANA_GAS, 2039280)
         });
         bytes memory setEnforcedOptionsData = abi.encodeWithSignature("setEnforcedOptions((uint32,uint16,bytes)[])", enforcedOptions);
         setEnforcedOptionsString = iToHex(setEnforcedOptionsData);
@@ -100,7 +100,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
                 "setConfig(address,address,(uint32,uint32,bytes)[])", 
                 OFT_ADDRESS, 
                 ETH_SEND_302, 
-                _getEthereumDVNConfig()
+                _getEthereumDVNConfig(15)
             )
         );
         json = string.concat(json, _getGnosisTransaction(endpointString, setConfigSendData, false));
@@ -111,7 +111,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
                 "setConfig(address,address,(uint32,uint32,bytes)[])", 
                 OFT_ADDRESS, 
                 ETH_RECEIVE_302, 
-                _getEthereumDVNConfig()
+                _getEthereumDVNConfig(32)
             )
         );
         json = string.concat(json, _getGnosisTransaction(endpointString, setConfigReceiveData, true));
@@ -138,7 +138,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
                 "setConfig(address,address,(uint32,uint32,bytes)[])", 
                 OFT_ADAPTER_ADDRESS, 
                 HYPE_SEND_302, 
-                _getHyperEVMDVNConfig()
+                _getHyperEVMDVNConfig(15)
             )
         );
         json = string.concat(json, _getGnosisTransaction(endpointString, setConfigSendData, false));
@@ -149,7 +149,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
                 "setConfig(address,address,(uint32,uint32,bytes)[])", 
                 OFT_ADAPTER_ADDRESS, 
                 HYPE_RECEIVE_302, 
-                _getHyperEVMDVNConfig()
+                _getHyperEVMDVNConfig(32)
             )
         );
         json = string.concat(json, _getGnosisTransaction(endpointString, setConfigReceiveData, true));
@@ -157,19 +157,19 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
         return json;
     }
 
-    function _getEthereumDVNConfig() internal pure returns (SetConfigParam[] memory) {
+    function _getEthereumDVNConfig(uint64 confirmations) internal pure returns (SetConfigParam[] memory) {
         SetConfigParam[] memory params = new SetConfigParam[](1);
         address[] memory requiredDVNs = new address[](3);
         
         // Sort DVNs to prevent LZ_ULN_Unsorted() errors
         requiredDVNs[0] = ETH_P2P_DVN;
-        requiredDVNs[1] = ETH_USDT0_DVN;
+        requiredDVNs[1] = ETH_USDT0_DVN;    
         requiredDVNs[2] = ETH_NETHERMIND_DVN;
         
         _sortDVNs(requiredDVNs);
 
         UlnConfig memory ulnConfig = UlnConfig({
-            confirmations: 15,
+            confirmations: confirmations,
             requiredDVNCount: 3,
             optionalDVNCount: 0,
             optionalDVNThreshold: 0,
@@ -182,7 +182,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
         return params;
     }
 
-    function _getHyperEVMDVNConfig() internal pure returns (SetConfigParam[] memory) {
+    function _getHyperEVMDVNConfig(uint64 confirmations) internal pure returns (SetConfigParam[] memory) {
         SetConfigParam[] memory params = new SetConfigParam[](1);
         address[] memory requiredDVNs = new address[](3);
         
@@ -194,7 +194,7 @@ contract ConfigureSolanaConnection is Script, L2Constants, GnosisHelpers {
         _sortDVNs(requiredDVNs);
 
         UlnConfig memory ulnConfig = UlnConfig({
-            confirmations: 15,
+            confirmations: confirmations,
             requiredDVNCount: 3,
             optionalDVNCount: 0,
             optionalDVNThreshold: 0,
