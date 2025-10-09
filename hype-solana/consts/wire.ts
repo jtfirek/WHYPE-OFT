@@ -36,9 +36,9 @@ export const ENFORCED_OPTIONS: Partial<Record<EndpointId, OAppEnforcedOption[]>>
 
 export const MULTISIGS: Partial<Record<EndpointId, string>> = {
     // Mainnet addresses
-    [EndpointId.HYPERLIQUID_V2_MAINNET]: '0xaBEEd16B15a18930595A85D96e435Ad2DF8ba8e4',
-    [EndpointId.ETHEREUM_V2_MAINNET]: '0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3',
-    [EndpointId.SOLANA_V2_MAINNET]: 'CQq4BJf8wt9hi7Rr256TXGYb1WJkxzFVvW6vmvaWj4pk',
+    [EndpointId.HYPERLIQUID_V2_MAINNET]: 'TODO',
+    [EndpointId.ETHEREUM_V2_MAINNET]: 'TODO',
+    [EndpointId.SOLANA_V2_MAINNET]: 'TODO',
 } as const
 
 // Helper functions
