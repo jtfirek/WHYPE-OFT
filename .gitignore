@@ -15,6 +15,7 @@ docs/
 .env
 
 hype-solana/.anchor
+hype-solana/artifacts
 hype-solana/node_modules
 hype-solana/.env
 hype-solana/coverage
