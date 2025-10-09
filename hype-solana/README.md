@@ -1,6 +1,7 @@
 # Solana HYPE OFT
 
-Run `pnpm install` to get dependencies.
+1. `pnpm install`
+2. `pnpm compile`
 
 To wire Solana -> evm chains, set up the desired configurations within `consts/wire.ts` and `layerzero.config.ts`. See existing chains for reference.
 
