@@ -47,7 +47,7 @@ contract L2Constants {
     
     // OFT Token Constants
     string constant TOKEN_NAME = "Wrapped HYPE";
-    string constant TOKEN_SYMBOL = "wHYPE";
+    string constant TOKEN_SYMBOL = "WHYPE";
     
     // Hyperliquid Constants
     string constant HYPE_RPC_URL = "https://rpc.hyperliquid.xyz/evm";
@@ -65,7 +65,22 @@ contract L2Constants {
     address constant HYPE_USDT0_DVN = 0xaE016a939935D6fe6185900d4c7C7C9b27366caC;
     address[3] HYPE_DVN = [0xf55E9dAef79eeC17F76e800F059495F198ef8348, 0xC7423626016bc40375458bc0277F28681EC91C8e, 0xaE016a939935D6fe6185900d4c7C7C9b27366caC];
 
-    
+    // Optimism Constants
+    string constant OP_RPC_URL = "https://mainnet.optimism.io";
+    string constant OP_CHAIN_ID = "10";
+
+    uint32 constant OP_EID = 30111;
+    address constant OP_ENDPOINT = 0x1a44076050125825900e736c501f859c50fE728c;
+    address constant OP_SEND_302 = 0x1322871e4ab09Bc7f5717189434f97bBD9546e95;
+    address constant OP_RECEIVE_302 = 0x3c4962Ff6258dcfCafD23a814237B7d6Eb712063;
+
+    address constant OP_BITGO_DVN = 0xF24Dc834039a1E39F6b99A51Df05Df9c91e35b2d;
+    address constant OP_P2P_DVN = 0x539008c98B17803A273eDf98aBA2d4414Ee3f4D7;
+    address constant OP_USDT0_DVN = 0x947Bb89919d1E5996d6C46223626AC2E97BcF8A3;
+    address[3] OP_DVN = [0xF24Dc834039a1E39F6b99A51Df05Df9c91e35b2d, 0x539008c98B17803A273eDf98aBA2d4414Ee3f4D7, 0x947Bb89919d1E5996d6C46223626AC2E97BcF8A3];
+
+    address constant OP_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
+
     // Construct an array of all the chains that are currently supported
     ConfigPerChain[] public Chains;
     constructor () {
@@ -79,10 +94,22 @@ contract L2Constants {
         ENDPOINT: 0x1a44076050125825900e736c501f859c50fE728c,
         SEND_302: 0xbB2Ea70C9E858123480642Cf96acbcCE1372dCe1,
         RECEIVE_302: 0xc02Ab410f0734EFa3F14628780e6e695156024C2,
-
         BITGO_DVN: 0xc9ca319f6Da263910fd9B037eC3d817A814ef3d8,
         P2P_DVN: 0x06559EE34D85a88317Bf0bfE307444116c631b67,
         USDT0_DVN: 0x3b0531eB02Ab4aD72e7a531180beeF9493a00dD2,
         LZ_DVN: [0xc9ca319f6Da263910fd9B037eC3d817A814ef3d8, 0x06559EE34D85a88317Bf0bfE307444116c631b67, 0x3b0531eB02Ab4aD72e7a531180beeF9493a00dD2]
+    });
+
+    ConfigPerChain OPTIMISM = ConfigPerChain({
+        RPC_URL: "https://mainnet.optimism.io",
+        CHAIN_ID: "10",
+        EID: 30111,
+        ENDPOINT: 0x1a44076050125825900e736c501f859c50fE728c,
+        SEND_302: 0x1322871e4ab09Bc7f5717189434f97bBD9546e95,
+        RECEIVE_302: 0x3c4962Ff6258dcfCafD23a814237B7d6Eb712063,
+        BITGO_DVN: 0xF24Dc834039a1E39F6b99A51Df05Df9c91e35b2d,
+        P2P_DVN: 0x539008c98B17803A273eDf98aBA2d4414Ee3f4D7,
+        USDT0_DVN: 0x947Bb89919d1E5996d6C46223626AC2E97BcF8A3,
+        LZ_DVN: [0xF24Dc834039a1E39F6b99A51Df05Df9c91e35b2d, 0x539008c98B17803A273eDf98aBA2d4414Ee3f4D7, 0x947Bb89919d1E5996d6C46223626AC2E97BcF8A3]
     });
 }
