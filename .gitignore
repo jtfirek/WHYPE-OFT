@@ -13,3 +13,36 @@ docs/
 
 # Dotenv file
 .env
+
+hype-solana/.anchor
+hype-solana/artifacts
+hype-solana/node_modules
+hype-solana/.env
+hype-solana/coverage
+hype-solana/coverage.json
+hype-solana/target
+hype-solana/typechain
+hype-solana/typechain-types
+
+# Hardhat files
+hype-solana/cache
+
+
+# LayerZero specific files
+hype-solana/.layerzero
+
+# foundry test compilation files
+hype-solana/out
+
+# pnpm
+hype-solana/pnpm-error.log
+
+# Editor and OS files
+.DS_Store
+.idea
+
+hype-solana/wallet*
+hype-solana/solana-pubkeys.txt
+hype-solana/commands.txt
+hype-solana/deployment_order.txt
+hype-solana/gen.mjs
