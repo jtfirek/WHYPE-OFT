@@ -24,6 +24,8 @@ contract L2Constants {
     // General chain constants
     string constant DEPLOYMENT_RPC_URL = "https://gateway.tenderly.co/public/mainnet";
     string constant DEPLOYMENT_CHAIN_ID = "1";
+    address constant L1_TIMELOCK = 0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761;
+    address constant L2_TIMELOCK = 0x851Dd540f4D2Ec78120De0a0cc87B21EdE5Df5C6;
     
     // LayerZero addresses
     uint32 constant DEPLOYMENT_EID = 30101;
@@ -37,7 +39,8 @@ contract L2Constants {
     address constant DEPLOYMENT_LAYERZERO_DVN = 0x589dEDbD617e0CBcB916A9223F4d1300c294236b;
     address[3] DEPLOYMENT_LZ_DVN = [0xc9ca319f6Da263910fd9B037eC3d817A814ef3d8, 0x06559EE34D85a88317Bf0bfE307444116c631b67, 0x3b0531eB02Ab4aD72e7a531180beeF9493a00dD2];
 
-    address constant DEPLOYMENT_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
+    address constant DEPLOYMENT_LEGACY_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
+    address constant DEPLOYMENT_CONTRACT_CONTROLLER = L1_TIMELOCK;
     /*//////////////////////////////////////////////////////////////
                     
     //////////////////////////////////////////////////////////////*/
@@ -57,7 +60,7 @@ contract L2Constants {
     address constant WRAPPED_HYPE_ADDRESS = 0x5555555555555555555555555555555555555555;
     address constant HYPE_ENDPOINT = 0x3A73033C0b1407574C76BdBAc67f126f6b4a9AA9;
     address constant HYPE_LEGACY_CONTRACT_CONTROLLER = 0xaBEEd16B15a18930595A85D96e435Ad2DF8ba8e4;
-    address constant HYPE_CONTRACT_CONTROLLER = 0x851Dd540f4D2Ec78120De0a0cc87B21EdE5Df5C6;
+    address constant HYPE_CONTRACT_CONTROLLER = L2_TIMELOCK;
 
     address constant OFT_ADAPTER_ADDRESS = 0x2B7E48511ea616101834f09945c11F7d78D9136d;
 
@@ -84,7 +87,15 @@ contract L2Constants {
     address constant OP_LAYERZERO_DVN = 0x6A02D83e8d433304bba74EF1c427913958187142;
     address[3] OP_DVN = [0xF24Dc834039a1E39F6b99A51Df05Df9c91e35b2d, 0x539008c98B17803A273eDf98aBA2d4414Ee3f4D7, 0x947Bb89919d1E5996d6C46223626AC2E97BcF8A3];
 
-    address constant OP_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
+    address constant OP_LEGACY_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
+    address constant OP_CONTRACT_CONTROLLER = L2_TIMELOCK;
+
+    // Scroll Constants
+    string constant SCROLL_RPC_URL = "https://rpc.scroll.io";
+    string constant SCROLL_CHAIN_ID = "534352";
+    uint32 constant SCROLL_EID = 30214;
+    address constant SCROLL_ENDPOINT = 0x1a44076050125825900e736c501f859c50fE728c;
+    address constant SCROLL_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
 
     // Construct an array of all the chains that are currently supported
     ConfigPerChain[] public Chains;
