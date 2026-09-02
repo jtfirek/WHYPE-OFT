@@ -24,7 +24,7 @@ contract L2Constants {
     // General chain constants
     string constant DEPLOYMENT_RPC_URL = "https://gateway.tenderly.co/public/mainnet";
     string constant DEPLOYMENT_CHAIN_ID = "1";
-    address constant L1_TIMELOCK = 0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761;
+    address constant L1_TIMELOCK = 0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a;
     address constant L2_TIMELOCK = 0x851Dd540f4D2Ec78120De0a0cc87B21EdE5Df5C6;
     
     // LayerZero addresses

@@ -15,6 +15,10 @@ interface IEndpointDelegatesFork {
 }
 
 contract WHYPEPeersAndOwnershipForkTest is Test, L2Constants {
+    address constant ETHEREUM_WEETH_OAPP = 0xcd2eb13D6831d4602D80E5db9230A57596CDCA63;
+    address constant OPTIMISM_WEETH_OAPP = 0x5A7fACB970D094B6C7FF1df0eA68D99E6e73CBFF;
+    address constant HYPEREVM_WEETH_OAPP = 0xA3D68b74bF0528fdD07263c60d6488749044914b;
+
     function test_Ethereum_RemovesScrollAndTransfersControl() public {
         vm.createSelectFork(vm.envOr("ETHEREUM_RPC", DEPLOYMENT_RPC_URL));
 
@@ -25,6 +29,7 @@ contract WHYPEPeersAndOwnershipForkTest is Test, L2Constants {
 
         assertEq(IWHYPEOAppFork(OFT_ADDRESS).peers(SCROLL_EID), bytes32(0));
         _assertControl(DEPLOYMENT_ENDPOINT, OFT_ADDRESS, DEPLOYMENT_CONTRACT_CONTROLLER);
+        _assertMatchesWeETH(DEPLOYMENT_ENDPOINT, OFT_ADDRESS, ETHEREUM_WEETH_OAPP);
     }
 
     function test_Optimism_TransfersControlAndRemainsDisconnectedFromScroll() public {
@@ -37,6 +42,7 @@ contract WHYPEPeersAndOwnershipForkTest is Test, L2Constants {
 
         assertEq(IWHYPEOAppFork(OFT_ADDRESS).peers(SCROLL_EID), bytes32(0));
         _assertControl(OP_ENDPOINT, OFT_ADDRESS, OP_CONTRACT_CONTROLLER);
+        _assertMatchesWeETH(OP_ENDPOINT, OFT_ADDRESS, OPTIMISM_WEETH_OAPP);
     }
 
     function test_HyperEVM_RemovesScrollAndTransfersControl() public {
@@ -49,6 +55,7 @@ contract WHYPEPeersAndOwnershipForkTest is Test, L2Constants {
 
         assertEq(IWHYPEOAppFork(OFT_ADAPTER_ADDRESS).peers(SCROLL_EID), bytes32(0));
         _assertControl(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, HYPE_CONTRACT_CONTROLLER);
+        _assertMatchesWeETH(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, HYPEREVM_WEETH_OAPP);
     }
 
     function _applyBundle(string memory path, address expectedSafe, address expectedTarget, uint256 expectedCount)
@@ -80,6 +87,15 @@ contract WHYPEPeersAndOwnershipForkTest is Test, L2Constants {
     function _assertControl(address endpoint, address oapp, address expected) internal view {
         assertEq(IWHYPEOAppFork(oapp).owner(), expected, "unexpected owner");
         assertEq(IEndpointDelegatesFork(endpoint).delegates(oapp), expected, "unexpected delegate");
+    }
+
+    function _assertMatchesWeETH(address endpoint, address whype, address weeth) internal view {
+        assertEq(IWHYPEOAppFork(whype).owner(), IWHYPEOAppFork(weeth).owner(), "owner does not match weETH");
+        assertEq(
+            IEndpointDelegatesFork(endpoint).delegates(whype),
+            IEndpointDelegatesFork(endpoint).delegates(weeth),
+            "delegate does not match weETH"
+        );
     }
 
     function _toBytes32(address value) internal pure returns (bytes32) {

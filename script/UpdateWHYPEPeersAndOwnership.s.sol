@@ -33,7 +33,7 @@ interface ITimelock {
  * RPCs may be overridden with ETHEREUM_RPC, OPTIMISM_RPC, and HYPEREVM_RPC.
  */
 contract UpdateWHYPEPeersAndOwnership is GnosisHelpers, L2Constants {
-    uint256 constant L1_TIMELOCK_DELAY = 10 days;
+    uint256 constant L1_TIMELOCK_DELAY = 2 days;
     uint256 constant L2_TIMELOCK_DELAY = 3 days;
 
     function run() external {
