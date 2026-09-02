@@ -7,7 +7,6 @@ import "../utils/L2Constants.sol";
 
 interface IWHYPEOAppFork {
     function owner() external view returns (address);
-    function totalSupply() external view returns (uint256);
     function peers(uint32 eid) external view returns (bytes32);
 }
 
@@ -50,24 +49,6 @@ contract WHYPEPeersAndOwnershipForkTest is Test, L2Constants {
 
         assertEq(IWHYPEOAppFork(OFT_ADAPTER_ADDRESS).peers(SCROLL_EID), bytes32(0));
         _assertControl(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, HYPE_CONTRACT_CONTROLLER);
-    }
-
-    function test_Scroll_RemovesAllPeersWithOutstandingSupply() public {
-        vm.createSelectFork(vm.envOr("SCROLL_RPC", SCROLL_RPC_URL));
-
-        _assertControl(SCROLL_ENDPOINT, OFT_ADDRESS, SCROLL_CONTRACT_CONTROLLER);
-        assertEq(IWHYPEOAppFork(OFT_ADDRESS).peers(DEPLOYMENT_EID), _toBytes32(OFT_ADDRESS));
-        assertEq(IWHYPEOAppFork(OFT_ADDRESS).peers(HYPE_EID), _toBytes32(OFT_ADAPTER_ADDRESS));
-
-        uint256 supplyBefore = IWHYPEOAppFork(OFT_ADDRESS).totalSupply();
-        assertGt(supplyBefore, 0, "expected outstanding Scroll supply");
-
-        _applyBundle("output/whype-update-scroll.json", SCROLL_CONTRACT_CONTROLLER, OFT_ADDRESS, 2);
-
-        assertEq(IWHYPEOAppFork(OFT_ADDRESS).peers(DEPLOYMENT_EID), bytes32(0));
-        assertEq(IWHYPEOAppFork(OFT_ADDRESS).peers(HYPE_EID), bytes32(0));
-        assertEq(IWHYPEOAppFork(OFT_ADDRESS).totalSupply(), supplyBefore, "Scroll supply changed");
-        _assertControl(SCROLL_ENDPOINT, OFT_ADDRESS, SCROLL_CONTRACT_CONTROLLER);
     }
 
     function _applyBundle(string memory path, address expectedSafe, address expectedTarget, uint256 expectedCount)

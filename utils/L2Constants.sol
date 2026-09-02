@@ -90,12 +90,8 @@ contract L2Constants {
     address constant OP_LEGACY_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
     address constant OP_CONTRACT_CONTROLLER = L2_TIMELOCK;
 
-    // Scroll Constants
-    string constant SCROLL_RPC_URL = "https://rpc.scroll.io";
-    string constant SCROLL_CHAIN_ID = "534352";
+    // Scroll LayerZero endpoint ID
     uint32 constant SCROLL_EID = 30214;
-    address constant SCROLL_ENDPOINT = 0x1a44076050125825900e736c501f859c50fE728c;
-    address constant SCROLL_CONTRACT_CONTROLLER = 0x0E556b9aff11195d8bf35F98134BC76B9b6b14C3;
 
     // Construct an array of all the chains that are currently supported
     ConfigPerChain[] public Chains;
