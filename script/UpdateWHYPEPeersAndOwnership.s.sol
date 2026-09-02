@@ -18,6 +18,14 @@ interface IEndpointDelegates {
     function delegates(address oapp) external view returns (address);
 }
 
+interface IMessageLibManager {
+    function setSendLibrary(address oapp, uint32 eid, address newLib) external;
+    function setReceiveLibrary(address oapp, uint32 eid, address newLib, uint256 gracePeriod) external;
+    function getSendLibrary(address sender, uint32 eid) external view returns (address);
+    function isDefaultSendLibrary(address sender, uint32 eid) external view returns (bool);
+    function getReceiveLibrary(address receiver, uint32 eid) external view returns (address lib, bool isDefault);
+}
+
 interface ITimelock {
     function getMinDelay() external view returns (uint256);
 }
@@ -25,6 +33,7 @@ interface ITimelock {
 /**
  * @notice Generates and simulates three Safe bundles that:
  *         - remove Scroll as a peer on Ethereum and HyperEVM;
+ *         - pin send and receive libraries for every remaining peer;
  *         - move Ethereum WHYPE control to the ether.fi L1 timelock; and
  *         - move Optimism and HyperEVM WHYPE control to the ether.fi L2 timelock.
  *
@@ -35,6 +44,11 @@ interface ITimelock {
 contract UpdateWHYPEPeersAndOwnership is GnosisHelpers, L2Constants {
     uint256 constant L1_TIMELOCK_DELAY = 2 days;
     uint256 constant L2_TIMELOCK_DELAY = 3 days;
+
+    struct Call {
+        address target;
+        bytes data;
+    }
 
     function run() external {
         vm.createDir("./output", true);
@@ -51,22 +65,31 @@ contract UpdateWHYPEPeersAndOwnership is GnosisHelpers, L2Constants {
             IWHYPEOAppControl(OFT_ADDRESS).peers(SCROLL_EID) == _toBytes32(OFT_ADDRESS),
             "Unexpected Ethereum -> Scroll peer"
         );
+        _assertDefaultLibraries(
+            DEPLOYMENT_ENDPOINT, OFT_ADDRESS, HYPE_EID, DEPLOYMENT_SEND_LIB_302, DEPLOYMENT_RECEIVE_LIB_302
+        );
         _assertTimelock(DEPLOYMENT_CONTRACT_CONTROLLER, L1_TIMELOCK_DELAY);
 
-        bytes[] memory calls = new bytes[](3);
-        calls[0] = _clearPeer(SCROLL_EID);
-        calls[1] = abi.encodeWithSelector(IWHYPEOAppControl.setDelegate.selector, DEPLOYMENT_CONTRACT_CONTROLLER);
-        calls[2] = abi.encodeWithSelector(IWHYPEOAppControl.transferOwnership.selector, DEPLOYMENT_CONTRACT_CONTROLLER);
+        Call[] memory calls = new Call[](5);
+        calls[0] = _setSendLibrary(DEPLOYMENT_ENDPOINT, OFT_ADDRESS, HYPE_EID, DEPLOYMENT_SEND_LIB_302);
+        calls[1] = _setReceiveLibrary(DEPLOYMENT_ENDPOINT, OFT_ADDRESS, HYPE_EID, DEPLOYMENT_RECEIVE_LIB_302);
+        calls[2] = Call(OFT_ADDRESS, _clearPeer(SCROLL_EID));
+        calls[3] = Call(
+            OFT_ADDRESS, abi.encodeWithSelector(IWHYPEOAppControl.setDelegate.selector, DEPLOYMENT_CONTRACT_CONTROLLER)
+        );
+        calls[4] = Call(
+            OFT_ADDRESS,
+            abi.encodeWithSelector(IWHYPEOAppControl.transferOwnership.selector, DEPLOYMENT_CONTRACT_CONTROLLER)
+        );
 
         _writeAndExecute(
-            DEPLOYMENT_CHAIN_ID,
-            DEPLOYMENT_LEGACY_CONTRACT_CONTROLLER,
-            OFT_ADDRESS,
-            calls,
-            "output/whype-update-ethereum.json"
+            DEPLOYMENT_CHAIN_ID, DEPLOYMENT_LEGACY_CONTRACT_CONTROLLER, calls, "output/whype-update-ethereum.json"
         );
 
         require(IWHYPEOAppControl(OFT_ADDRESS).peers(SCROLL_EID) == bytes32(0), "Scroll peer not cleared");
+        _assertPinnedLibraries(
+            DEPLOYMENT_ENDPOINT, OFT_ADDRESS, HYPE_EID, DEPLOYMENT_SEND_LIB_302, DEPLOYMENT_RECEIVE_LIB_302
+        );
         _assertControl(DEPLOYMENT_ENDPOINT, OFT_ADDRESS, DEPLOYMENT_CONTRACT_CONTROLLER);
     }
 
@@ -74,17 +97,22 @@ contract UpdateWHYPEPeersAndOwnership is GnosisHelpers, L2Constants {
         _selectFork(vm.envOr("OPTIMISM_RPC", OP_RPC_URL), OP_CHAIN_ID);
         _assertControl(OP_ENDPOINT, OFT_ADDRESS, OP_LEGACY_CONTRACT_CONTROLLER);
         require(IWHYPEOAppControl(OFT_ADDRESS).peers(SCROLL_EID) == bytes32(0), "Unexpected Optimism peer");
+        _assertDefaultLibraries(OP_ENDPOINT, OFT_ADDRESS, HYPE_EID, OP_SEND_302, OP_RECEIVE_302);
         _assertTimelock(OP_CONTRACT_CONTROLLER, L2_TIMELOCK_DELAY);
 
-        bytes[] memory calls = new bytes[](2);
-        calls[0] = abi.encodeWithSelector(IWHYPEOAppControl.setDelegate.selector, OP_CONTRACT_CONTROLLER);
-        calls[1] = abi.encodeWithSelector(IWHYPEOAppControl.transferOwnership.selector, OP_CONTRACT_CONTROLLER);
-
-        _writeAndExecute(
-            OP_CHAIN_ID, OP_LEGACY_CONTRACT_CONTROLLER, OFT_ADDRESS, calls, "output/whype-update-optimism.json"
+        Call[] memory calls = new Call[](4);
+        calls[0] = _setSendLibrary(OP_ENDPOINT, OFT_ADDRESS, HYPE_EID, OP_SEND_302);
+        calls[1] = _setReceiveLibrary(OP_ENDPOINT, OFT_ADDRESS, HYPE_EID, OP_RECEIVE_302);
+        calls[2] =
+            Call(OFT_ADDRESS, abi.encodeWithSelector(IWHYPEOAppControl.setDelegate.selector, OP_CONTRACT_CONTROLLER));
+        calls[3] = Call(
+            OFT_ADDRESS, abi.encodeWithSelector(IWHYPEOAppControl.transferOwnership.selector, OP_CONTRACT_CONTROLLER)
         );
 
+        _writeAndExecute(OP_CHAIN_ID, OP_LEGACY_CONTRACT_CONTROLLER, calls, "output/whype-update-optimism.json");
+
         require(IWHYPEOAppControl(OFT_ADDRESS).peers(SCROLL_EID) == bytes32(0), "Optimism peer changed");
+        _assertPinnedLibraries(OP_ENDPOINT, OFT_ADDRESS, HYPE_EID, OP_SEND_302, OP_RECEIVE_302);
         _assertControl(OP_ENDPOINT, OFT_ADDRESS, OP_CONTRACT_CONTROLLER);
     }
 
@@ -95,37 +123,43 @@ contract UpdateWHYPEPeersAndOwnership is GnosisHelpers, L2Constants {
             IWHYPEOAppControl(OFT_ADAPTER_ADDRESS).peers(SCROLL_EID) == _toBytes32(OFT_ADDRESS),
             "Unexpected HyperEVM -> Scroll peer"
         );
+        _assertDefaultLibraries(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, DEPLOYMENT_EID, HYPE_SEND_302, HYPE_RECEIVE_302);
+        _assertDefaultLibraries(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, OP_EID, HYPE_SEND_302, HYPE_RECEIVE_302);
         _assertTimelock(HYPE_CONTRACT_CONTROLLER, L2_TIMELOCK_DELAY);
 
-        bytes[] memory calls = new bytes[](3);
-        calls[0] = _clearPeer(SCROLL_EID);
-        calls[1] = abi.encodeWithSelector(IWHYPEOAppControl.setDelegate.selector, HYPE_CONTRACT_CONTROLLER);
-        calls[2] = abi.encodeWithSelector(IWHYPEOAppControl.transferOwnership.selector, HYPE_CONTRACT_CONTROLLER);
-
-        _writeAndExecute(
-            HYPE_CHAIN_ID,
-            HYPE_LEGACY_CONTRACT_CONTROLLER,
+        Call[] memory calls = new Call[](7);
+        calls[0] = _setSendLibrary(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, DEPLOYMENT_EID, HYPE_SEND_302);
+        calls[1] = _setReceiveLibrary(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, DEPLOYMENT_EID, HYPE_RECEIVE_302);
+        calls[2] = _setSendLibrary(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, OP_EID, HYPE_SEND_302);
+        calls[3] = _setReceiveLibrary(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, OP_EID, HYPE_RECEIVE_302);
+        calls[4] = Call(OFT_ADAPTER_ADDRESS, _clearPeer(SCROLL_EID));
+        calls[5] = Call(
             OFT_ADAPTER_ADDRESS,
-            calls,
-            "output/whype-update-hyperevm.json"
+            abi.encodeWithSelector(IWHYPEOAppControl.setDelegate.selector, HYPE_CONTRACT_CONTROLLER)
+        );
+        calls[6] = Call(
+            OFT_ADAPTER_ADDRESS,
+            abi.encodeWithSelector(IWHYPEOAppControl.transferOwnership.selector, HYPE_CONTRACT_CONTROLLER)
         );
 
+        _writeAndExecute(HYPE_CHAIN_ID, HYPE_LEGACY_CONTRACT_CONTROLLER, calls, "output/whype-update-hyperevm.json");
+
         require(IWHYPEOAppControl(OFT_ADAPTER_ADDRESS).peers(SCROLL_EID) == bytes32(0), "Scroll peer not cleared");
+        _assertPinnedLibraries(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, DEPLOYMENT_EID, HYPE_SEND_302, HYPE_RECEIVE_302);
+        _assertPinnedLibraries(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, OP_EID, HYPE_SEND_302, HYPE_RECEIVE_302);
         _assertControl(HYPE_ENDPOINT, OFT_ADAPTER_ADDRESS, HYPE_CONTRACT_CONTROLLER);
     }
 
-    function _writeAndExecute(
-        string memory chainId,
-        address safe,
-        address oapp,
-        bytes[] memory calls,
-        string memory outputPath
-    ) internal {
-        string memory target = addressToHex(oapp);
+    function _writeAndExecute(string memory chainId, address safe, Call[] memory calls, string memory outputPath)
+        internal
+    {
         string memory bundle = _getGnosisHeader(chainId, addressToHex(safe));
 
         for (uint256 i = 0; i < calls.length; i++) {
-            bundle = string.concat(bundle, _getGnosisTransaction(target, iToHex(calls[i]), "0", i == calls.length - 1));
+            bundle = string.concat(
+                bundle,
+                _getGnosisTransaction(addressToHex(calls[i].target), iToHex(calls[i].data), "0", i == calls.length - 1)
+            );
         }
 
         vm.writeFile(outputPath, bundle);
@@ -148,6 +182,48 @@ contract UpdateWHYPEPeersAndOwnership is GnosisHelpers, L2Constants {
     function _assertTimelock(address timelock, uint256 expectedDelay) internal view {
         require(timelock.code.length > 0, "Timelock has no code");
         require(ITimelock(timelock).getMinDelay() == expectedDelay, "Unexpected timelock delay");
+    }
+
+    function _assertDefaultLibraries(address endpoint, address oapp, uint32 eid, address sendLib, address receiveLib)
+        internal
+        view
+    {
+        IMessageLibManager manager = IMessageLibManager(endpoint);
+        require(manager.getSendLibrary(oapp, eid) == sendLib, "Unexpected default send library");
+        require(manager.isDefaultSendLibrary(oapp, eid), "Send library already pinned");
+        (address configuredReceiveLib, bool isDefault) = manager.getReceiveLibrary(oapp, eid);
+        require(configuredReceiveLib == receiveLib, "Unexpected default receive library");
+        require(isDefault, "Receive library already pinned");
+    }
+
+    function _assertPinnedLibraries(address endpoint, address oapp, uint32 eid, address sendLib, address receiveLib)
+        internal
+        view
+    {
+        IMessageLibManager manager = IMessageLibManager(endpoint);
+        require(manager.getSendLibrary(oapp, eid) == sendLib, "Send library pin failed");
+        require(!manager.isDefaultSendLibrary(oapp, eid), "Send library still default");
+        (address configuredReceiveLib, bool isDefault) = manager.getReceiveLibrary(oapp, eid);
+        require(configuredReceiveLib == receiveLib, "Receive library pin failed");
+        require(!isDefault, "Receive library still default");
+    }
+
+    function _setSendLibrary(address endpoint, address oapp, uint32 eid, address sendLib)
+        internal
+        pure
+        returns (Call memory)
+    {
+        return Call(endpoint, abi.encodeWithSelector(IMessageLibManager.setSendLibrary.selector, oapp, eid, sendLib));
+    }
+
+    function _setReceiveLibrary(address endpoint, address oapp, uint32 eid, address receiveLib)
+        internal
+        pure
+        returns (Call memory)
+    {
+        return Call(
+            endpoint, abi.encodeWithSelector(IMessageLibManager.setReceiveLibrary.selector, oapp, eid, receiveLib, 0)
+        );
     }
 
     function _clearPeer(uint32 eid) internal pure returns (bytes memory) {
