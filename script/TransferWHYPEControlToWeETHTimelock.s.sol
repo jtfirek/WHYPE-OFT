@@ -18,13 +18,13 @@ interface IEndpointDelegates {
 
 /**
  * @notice Generates and simulates the HyperEVM Safe bundle that moves WHYPE
- *         adapter ownership and LayerZero delegate control to the ether.fi Safe.
+ *         adapter ownership and LayerZero delegate control to the weETH timelock.
  *
- * forge script script/TransferWHYPEControlToEtherFiSafe.s.sol:TransferWHYPEControlToEtherFiSafe -vvv
+ * forge script script/TransferWHYPEControlToWeETHTimelock.s.sol:TransferWHYPEControlToWeETHTimelock -vvv
  *
  *         HYPEREVM_RPC may override the default HyperEVM RPC.
  */
-contract TransferWHYPEControlToEtherFiSafe is GnosisHelpers, L2Constants {
+contract TransferWHYPEControlToWeETHTimelock is GnosisHelpers, L2Constants {
     string constant OUTPUT_PATH = "output/whype-control-transfer-hyperevm.json";
 
     function run() external {

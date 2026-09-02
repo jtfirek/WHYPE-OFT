@@ -17,14 +17,15 @@ interface IEndpointDelegatesFork {
 
 /**
  * @notice Executes the generated WHYPE control-transfer bundle on a HyperEVM fork
- *         and verifies both ownership and LayerZero delegate authority.
+ *         and verifies both controls match the live weETH OFT.
  *
  * forge test --match-path test/WHYPEControlTransferFork.t.sol -vv
  */
 contract WHYPEControlTransferForkTest is Test, L2Constants {
     string constant BUNDLE_PATH = "output/whype-control-transfer-hyperevm.json";
+    address constant WEETH_OFT_ADDRESS = 0xA3D68b74bF0528fdD07263c60d6488749044914b;
 
-    function test_WHYPEControlMovesToEtherFiSafe() public {
+    function test_WHYPEControlMatchesWeETH() public {
         vm.createSelectFork(vm.envOr("HYPEREVM_RPC", HYPE_RPC_URL));
 
         IWHYPEAdapterControlFork adapter = IWHYPEAdapterControlFork(OFT_ADAPTER_ADDRESS);
@@ -37,8 +38,12 @@ contract WHYPEControlTransferForkTest is Test, L2Constants {
 
         _applyBundle();
 
-        assertEq(adapter.owner(), HYPE_CONTRACT_CONTROLLER, "owner not transferred");
-        assertEq(endpoint.delegates(OFT_ADAPTER_ADDRESS), HYPE_CONTRACT_CONTROLLER, "delegate not transferred");
+        address weETHOwner = IWHYPEAdapterControlFork(WEETH_OFT_ADDRESS).owner();
+        address weETHDelegate = endpoint.delegates(WEETH_OFT_ADDRESS);
+
+        assertEq(weETHOwner, HYPE_CONTRACT_CONTROLLER, "configured controller does not match weETH owner");
+        assertEq(adapter.owner(), weETHOwner, "WHYPE owner does not match weETH");
+        assertEq(endpoint.delegates(OFT_ADAPTER_ADDRESS), weETHDelegate, "WHYPE delegate does not match weETH");
     }
 
     function _applyBundle() internal {
